@@ -11,9 +11,6 @@ import datetime
 import base64
 import time
 
-# ==========================================
-# 0. DESIGN SYSTEM & COLORS
-# ==========================================
 COLOR_BG = "#0e0e1a"           
 COLOR_ACCENT_CYAN = "#00f2ff"  
 COLOR_ACCENT_PINK = "#ff0055"  
@@ -23,7 +20,7 @@ COLOR_GRID = "#333333"
 
 st.set_page_config(
     page_title="SleepRiskAI | Circadian Monitor",
-    page_icon="🛌",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -240,12 +237,10 @@ input_df = pd.DataFrame([input_data])
 if not is_demo_mode:
     input_df = input_df[feature_names]
 
-# MAIN INTERFACE
-
 col_title_L, col_title_R = st.columns([1, 5])
 with col_title_R:
     st.markdown(f"# SleepRisk<span>AI</span>", unsafe_allow_html=True)
-    st.markdown("##### Advanced Sleep Disorder Risk Simulator")
+    st.markdown("##### 🌌 Advanced Sleep Disorder Risk Simulator")
 
 try:
     if is_demo_mode:
@@ -257,7 +252,6 @@ except:
 
 st.markdown("---")
 
-# VISUALIZATIONS (Graphs)
 
 col_viz_left, col_viz_right = st.columns(2)
 
@@ -351,10 +345,7 @@ with col_viz_right:
     )
     
     st.plotly_chart(fig_radar, use_container_width=True)
-
-
-# DR. SLEEP AI 
-
+    
 st.markdown("---")
 col_ai_icon, col_ai_content = st.columns([1, 6])
 with col_ai_icon:
@@ -374,8 +365,6 @@ with col_ai_content:
         <div class="ai-text">{ai_advice}</div>
     </div>
     """, unsafe_allow_html=True)
-
-# 7. SHAP EXPLAINABILITY 
 
 st.markdown("---")
 st.markdown("### Model Explainability")
@@ -432,9 +421,9 @@ with st.expander("Technical Deep Dive (SHAP)", expanded=False):
             
     except Exception as e:
         st.error(f"Visualization Error: {str(e)}")
-
+        
 if shap_exp_obj is not None:
-    st.markdown("#### 🤖 AI Logic Decoder (Top Factors)")
+    st.markdown("#### AI Logic Decoder (Top Factors)")
     
     impact_df = pd.DataFrame({
         "Feature": shap_exp_obj.feature_names,
@@ -472,7 +461,6 @@ if shap_exp_obj is not None:
             </div>
             """, unsafe_allow_html=True)
 
-# 8. LIFESTYLE LAB
 st.markdown("---")
 st.markdown("### Lifestyle Lab")
 
@@ -545,10 +533,15 @@ with st.container():
         )
         st.plotly_chart(fig_sim, use_container_width=True)
 
+
+# ==========================================
+# 9. ADVANCED VISUAL REPORT
+# ==========================================
 st.markdown("---")
 col_down, col_info = st.columns([3, 1])
 
 with col_down:
+    # 1. Configuração de Cores e Dados
     risk_percentage = prob_val * 100
     if prob_val > 0.5:
         risk_color = "#ff0055" # Pink
@@ -563,6 +556,7 @@ with col_down:
         risk_icon = "🛡️"
         recommendation = "Your circadian rhythm appears stable. Maintain current healthy lifestyle habits."
 
+    # 2. Processamento do SHAP para o Relatório
     try:
         if shap_exp_obj is None:
             shap_values_rep = explainer.shap_values(input_df)
@@ -610,6 +604,7 @@ with col_down:
     except Exception as e:
         factors_html = f"<div style='color:#999'>Analysis data pending ({str(e)})</div>"
 
+    # 3. HTML VISUAL REDESIGN (GRID SYSTEM & CARDS)
     html_report = f"""
     <!DOCTYPE html>
     <html>
