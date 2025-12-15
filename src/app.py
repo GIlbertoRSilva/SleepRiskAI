@@ -11,9 +11,6 @@ import datetime
 import base64
 import time
 
-# ==========================================
-# 0. DESIGN SYSTEM & COLORS
-# ==========================================
 COLOR_BG = "#0e0e1a"           
 COLOR_ACCENT_CYAN = "#00f2ff"  
 COLOR_ACCENT_PINK = "#ff0055"  
@@ -21,9 +18,6 @@ COLOR_TEXT_MAIN = "#ffffff"
 COLOR_TEXT_DIM = "#a0a0a0"
 COLOR_GRID = "#333333"
 
-# ==========================================
-# 1. PAGE CONFIG & CSS
-# ==========================================
 st.set_page_config(
     page_title="SleepRiskAI | Circadian Monitor",
     page_icon="🌌",
@@ -126,9 +120,6 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 2. RESOURCE LOADING
-# ==========================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / "models"
 MODEL_PATH = MODEL_DIR / "sleep_risk_model.pkl"
@@ -186,9 +177,6 @@ def load_resources():
 
 model, feature_names, explainer, is_demo_mode = load_resources()
 
-# ==========================================
-# 3. SIDEBAR
-# ==========================================
 st.sidebar.markdown("### Patient Profile")
 
 if 'synced' not in st.session_state: st.session_state['synced'] = False
@@ -249,10 +237,6 @@ input_df = pd.DataFrame([input_data])
 if not is_demo_mode:
     input_df = input_df[feature_names]
 
-# ==========================================
-# 4. MAIN INTERFACE
-# ==========================================
-
 col_title_L, col_title_R = st.columns([1, 5])
 with col_title_R:
     st.markdown(f"# SleepRisk<span>AI</span>", unsafe_allow_html=True)
@@ -268,9 +252,6 @@ except:
 
 st.markdown("---")
 
-# ==========================================
-# 5. VISUALIZATIONS (Graphs)
-# ==========================================
 
 col_viz_left, col_viz_right = st.columns(2)
 
@@ -364,11 +345,7 @@ with col_viz_right:
     )
     
     st.plotly_chart(fig_radar, use_container_width=True)
-
-
-# ==========================================
-# 6. DR. SLEEP AI CONSULTANT
-# ==========================================
+    
 st.markdown("---")
 col_ai_icon, col_ai_content = st.columns([1, 6])
 with col_ai_icon:
@@ -389,10 +366,6 @@ with col_ai_content:
     </div>
     """, unsafe_allow_html=True)
 
-
-# ==========================================
-# 7. SHAP EXPLAINABILITY (With AI Logic Decoder RESTORED)
-# ==========================================
 st.markdown("---")
 st.markdown("### Model Explainability")
 
@@ -448,10 +421,9 @@ with st.expander("Technical Deep Dive (SHAP)", expanded=False):
             
     except Exception as e:
         st.error(f"Visualization Error: {str(e)}")
-
-# --- RESTORED FEATURE CARDS SECTION (AI LOGIC DECODER) ---
+        
 if shap_exp_obj is not None:
-    st.markdown("#### 🤖 AI Logic Decoder (Top Factors)")
+    st.markdown("#### AI Logic Decoder (Top Factors)")
     
     impact_df = pd.DataFrame({
         "Feature": shap_exp_obj.feature_names,
@@ -489,10 +461,6 @@ if shap_exp_obj is not None:
             </div>
             """, unsafe_allow_html=True)
 
-
-# ==========================================
-# 8. LIFESTYLE LAB
-# ==========================================
 st.markdown("---")
 st.markdown("### Lifestyle Lab")
 
