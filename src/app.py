@@ -11,6 +11,9 @@ import datetime
 import base64
 import time
 
+# ==========================================
+# 0. DESIGN SYSTEM & COLORS
+# ==========================================
 COLOR_BG = "#0e0e1a"           
 COLOR_ACCENT_CYAN = "#00f2ff"  
 COLOR_ACCENT_PINK = "#ff0055"  
@@ -18,6 +21,9 @@ COLOR_TEXT_MAIN = "#ffffff"
 COLOR_TEXT_DIM = "#a0a0a0"
 COLOR_GRID = "#333333"
 
+# ==========================================
+# 1. PAGE CONFIG & CSS
+# ==========================================
 st.set_page_config(
     page_title="SleepRiskAI | Circadian Monitor",
     page_icon="🌌",
@@ -57,13 +63,11 @@ st.markdown(f"""
     div[data-baseweb="slider"] div[data-testid="stTickBar"] > div {{
         background-color: {COLOR_ACCENT_CYAN} !important;
     }}
-    /* A barra de progresso do slider */
     div.stSlider > div[data-baseweb="slider"] > div > div {{
         background-color: #3a7bd5 !important;
     }}
 
     /* 5. BOTÕES (Forçar Ciano) */
-    /* Botão Primário (Solid) */
     button[kind="primary"] {{
         background-color: {COLOR_ACCENT_CYAN} !important;
         border: 1px solid {COLOR_ACCENT_CYAN} !important;
@@ -74,7 +78,6 @@ st.markdown(f"""
     button[kind="primary"]:hover {{
         box-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
     }}
-    /* Botão Secundário (Outline) */
     button[kind="secondary"] {{
         border: 1px solid {COLOR_ACCENT_CYAN} !important;
         color: {COLOR_ACCENT_CYAN} !important;
@@ -105,7 +108,6 @@ st.markdown(f"""
         font-size: 14px;
         line-height: 1.6;
     }}
-    /* Corrige negrito dentro da caixa AI */
     .ai-text strong {{
         color: white;
         font-weight: 700;
@@ -124,6 +126,9 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
+# ==========================================
+# 2. RESOURCE LOADING
+# ==========================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / "models"
 MODEL_PATH = MODEL_DIR / "sleep_risk_model.pkl"
@@ -181,7 +186,9 @@ def load_resources():
 
 model, feature_names, explainer, is_demo_mode = load_resources()
 
-# Sidebar inputs
+# ==========================================
+# 3. SIDEBAR
+# ==========================================
 st.sidebar.markdown("### Patient Profile")
 
 if 'synced' not in st.session_state: st.session_state['synced'] = False
@@ -242,7 +249,9 @@ input_df = pd.DataFrame([input_data])
 if not is_demo_mode:
     input_df = input_df[feature_names]
 
-# Main Interface
+# ==========================================
+# 4. MAIN INTERFACE
+# ==========================================
 
 col_title_L, col_title_R = st.columns([1, 5])
 with col_title_R:
@@ -259,8 +268,9 @@ except:
 
 st.markdown("---")
 
-
-#VISUALIZATIONS (Graphs)
+# ==========================================
+# 5. VISUALIZATIONS (Graphs)
+# ==========================================
 
 col_viz_left, col_viz_right = st.columns(2)
 
@@ -356,8 +366,9 @@ with col_viz_right:
     st.plotly_chart(fig_radar, use_container_width=True)
 
 
-# DR. SLEEP AI CONSULTANT 
-
+# ==========================================
+# 6. DR. SLEEP AI CONSULTANT
+# ==========================================
 st.markdown("---")
 col_ai_icon, col_ai_content = st.columns([1, 6])
 with col_ai_icon:
@@ -379,9 +390,9 @@ with col_ai_content:
     """, unsafe_allow_html=True)
 
 
-
-# SHAP Explainability
-
+# ==========================================
+# 7. SHAP EXPLAINABILITY (With AI Logic Decoder RESTORED)
+# ==========================================
 st.markdown("---")
 st.markdown("### Model Explainability")
 
@@ -438,7 +449,50 @@ with st.expander("Technical Deep Dive (SHAP)", expanded=False):
     except Exception as e:
         st.error(f"Visualization Error: {str(e)}")
 
+# --- RESTORED FEATURE CARDS SECTION (AI LOGIC DECODER) ---
+if shap_exp_obj is not None:
+    st.markdown("#### 🤖 AI Logic Decoder (Top Factors)")
+    
+    impact_df = pd.DataFrame({
+        "Feature": shap_exp_obj.feature_names,
+        "Impact": shap_exp_obj.values,
+        "Value": shap_exp_obj.data
+    })
+    
+    impact_df['AbsImpact'] = impact_df['Impact'].abs()
+    top_3 = impact_df.sort_values(by='AbsImpact', ascending=False).head(3)
+    
+    cols = st.columns(3)
+    for i, (index, row) in enumerate(top_3.iterrows()):
+        feature = row['Feature']
+        impact = row['Impact']
+        val = row['Value']
+        
+        if impact > 0: 
+            direction = "Increased Risk 📈"
+            color = COLOR_ACCENT_PINK
+        else: 
+            direction = "Decreased Risk 🛡️"
+            color = COLOR_ACCENT_CYAN
+            
+        val_str = f"{val:.1f}"
+        if feature == "Gender": val_str = "Male" if val == 1 else "Female"
+        if feature == "Hypertension": val_str = "Yes" if val == 1 else "No"
+        
+        with cols[i]:
+            st.markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid {color};">
+                <p style="color: {COLOR_TEXT_DIM}; font-size: 0.8em; margin-bottom: 5px;">Key Factor #{i+1}</p>
+                <h4 style="margin: 0; color: white;">{feature}</h4>
+                <p style="font-size: 1.1em; font-weight: bold; margin: 5px 0;">Value: <span style="color:{color}">{val_str}</span></p>
+                <p style="margin: 0; color: {color}; font-weight: bold; font-size: 0.9em;">{direction}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
+
+# ==========================================
+# 8. LIFESTYLE LAB
+# ==========================================
 st.markdown("---")
 st.markdown("### Lifestyle Lab")
 
@@ -513,7 +567,7 @@ with st.container():
 
 
 # ==========================================
-# 8. ADVANCED VISUAL REPORT
+# 9. ADVANCED VISUAL REPORT
 # ==========================================
 st.markdown("---")
 col_down, col_info = st.columns([3, 1])
