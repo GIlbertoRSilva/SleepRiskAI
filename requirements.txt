@@ -1,6 +1,7 @@
-joblib
-scikit-learn
-pandas
 streamlit
+pandas
+scikit-learn
+joblib
 matplotlib
 shap
+plotly
