@@ -8,9 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 
-# =========================
-# Paths
-# =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "processed" / "data_processed.csv"
 MODEL_DIR = BASE_DIR / "models"

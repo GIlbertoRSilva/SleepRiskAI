@@ -9,12 +9,11 @@ import plotly.graph_objects as go
 from pathlib import Path
 import datetime
 import base64
+import time
 
-
-COLOR_BG = "#0e0e1a"           # Deepest background
-COLOR_ACCENT_CYAN = "#00f2ff"  # Safety / Good / Patient (Bright Cyan)
-COLOR_ACCENT_PINK = "#ff0055"  # Danger / Bad (Neon Pink)
-COLOR_ACCENT_PURPLE = "#bc13fe"# Warning (Neon Purple)
+COLOR_BG = "#0e0e1a"           
+COLOR_ACCENT_CYAN = "#00f2ff"  
+COLOR_ACCENT_PINK = "#ff0055"  
 COLOR_TEXT_MAIN = "#ffffff"
 COLOR_TEXT_DIM = "#a0a0a0"
 COLOR_GRID = "#333333"
@@ -28,18 +27,18 @@ st.set_page_config(
 
 st.markdown(f"""
     <style>
-    /* Main Gradient Background */
+    /* 1. Fundo Principal */
     .stApp {{
         background: linear-gradient(135deg, #050510 0%, #151530 100%);
     }}
 
-    /* Sidebar */
+    /* 2. Sidebar Borda */
     section[data-testid="stSidebar"] {{
         background-color: #02020a;
         border-right: 1px solid #1f1f30;
     }}
     
-    /* Typography */
+    /* 3. Tipografia */
     h1, h2, h3, h4, h5, h6 {{
         font-family: 'Inter', sans-serif;
         color: {COLOR_TEXT_MAIN} !important;
@@ -50,28 +49,77 @@ st.markdown(f"""
         -webkit-text-fill-color: transparent;
     }}
     
-    /* SLIDERS - Theme Matching */
-    div.stSlider > div[data-baseweb = "slider"] > div > div > div[role="slider"] {{
-        background-color: {COLOR_ACCENT_CYAN} !important; 
-        box-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+    /* 4. SLIDERS (Forçar Ciano) */
+    div[data-baseweb="slider"] div[role="slider"] {{
+        background-color: {COLOR_ACCENT_CYAN} !important;
+        box-shadow: 0 0 10px rgba(0, 242, 255, 0.5) !important;
     }}
-    div.stSlider > div[data-baseweb = "slider"] > div > div {{
+    div[data-baseweb="slider"] div[data-testid="stTickBar"] > div {{
+        background-color: {COLOR_ACCENT_CYAN} !important;
+    }}
+    /* A barra de progresso do slider */
+    div.stSlider > div[data-baseweb="slider"] > div > div {{
         background-color: #3a7bd5 !important;
     }}
-    div[data-testid="stSliderTickBarMin"], div[data-testid="stSliderTickBarMax"] {{
+
+    /* 5. BOTÕES (Forçar Ciano) */
+    /* Botão Primário (Solid) */
+    button[kind="primary"] {{
+        background-color: {COLOR_ACCENT_CYAN} !important;
+        border: 1px solid {COLOR_ACCENT_CYAN} !important;
+        color: #000 !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease;
+    }}
+    button[kind="primary"]:hover {{
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
+    }}
+    /* Botão Secundário (Outline) */
+    button[kind="secondary"] {{
+        border: 1px solid {COLOR_ACCENT_CYAN} !important;
         color: {COLOR_ACCENT_CYAN} !important;
     }}
-    
-    /* Metrics */
-    div[data-testid="stMetricValue"] {{
-        color: {COLOR_ACCENT_CYAN} !important;
-        text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    button[kind="secondary"]:hover {{
+        border-color: #fff !important;
+        color: #fff !important;
     }}
     
-    /* Selectbox */
+    /* 6. AI Box Style */
+    .ai-box {{
+        background: rgba(255, 255, 255, 0.03);
+        border-left: 3px solid {COLOR_ACCENT_CYAN};
+        padding: 20px;
+        border-radius: 0 12px 12px 0;
+        margin: 20px 0;
+    }}
+    .ai-title {{
+        color: {COLOR_ACCENT_CYAN};
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }}
+    .ai-text {{
+        color: #ddd;
+        font-size: 14px;
+        line-height: 1.6;
+    }}
+    /* Corrige negrito dentro da caixa AI */
+    .ai-text strong {{
+        color: white;
+        font-weight: 700;
+    }}
+
+    /* 7. Selectbox Styling */
     .stSelectbox div[data-baseweb="select"] div {{
         background-color: #151530;
         color: white;
+    }}
+    
+    /* 8. Métricas */
+    div[data-testid="stMetricValue"] {{
+        color: {COLOR_ACCENT_CYAN} !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -101,11 +149,9 @@ def load_resources():
         return model, feature_names, explainer, False
 
     except Exception as e:
-     
         class MockModel:
             def predict(self, X): return np.random.choice([0, 1], size=len(X))
             def predict_proba(self, X): 
-
                 try:
                     score = 0.5
                     if 'Stress Level' in X.columns:
@@ -135,27 +181,44 @@ def load_resources():
 
 model, feature_names, explainer, is_demo_mode = load_resources()
 
-st.sidebar.markdown("### 🧬 Patient Profile")
+# Sidebar inputs
+st.sidebar.markdown("### Patient Profile")
+
+if 'synced' not in st.session_state: st.session_state['synced'] = False
+
+def get_val(key, default, synced_val):
+    return synced_val if st.session_state['synced'] else default
+
+col_btn_icon, col_btn_main = st.sidebar.columns([1, 4])
+with col_btn_main:
+    if st.sidebar.button("Sync Wearable Data", help="Simulate connection to Apple Health/Fitbit"):
+        with st.sidebar:
+            with st.spinner("Connecting..."):
+                time.sleep(1.2)
+        st.success("Data Synced!")
+        st.session_state['synced'] = True
+        st.rerun()
+
 st.sidebar.markdown("---")
 
 with st.sidebar.expander("👤 Demographics", expanded=True):
     gender = st.selectbox("Gender", ["Male", "Female"])
-    age = st.slider("Age", 18, 80, 30)
-    bmi_category = st.selectbox("BMI Category", ["Normal", "Normal Weight", "Overweight", "Obese"])
+    age = st.slider("Age", 18, 80, get_val('age', 30, 45))
+    bmi_idx = 2 if st.session_state['synced'] else 0
+    bmi_category = st.selectbox("BMI Category", ["Normal", "Normal Weight", "Overweight", "Obese"], index=bmi_idx)
 
 with st.sidebar.expander("💤 Lifestyle", expanded=True):
-    sleep_duration = st.slider("Sleep Duration (h)", 3.0, 10.0, 7.0, 0.1)
-    sleep_quality = st.slider("Sleep Quality (1–10)", 1, 10, 7)
-    stress_level = st.slider("Stress Level (1–10)", 1, 10, 5)
-    physical_activity = st.slider("Phys. Activity (min/day)", 0, 150, 45)
-    daily_steps = st.slider("Daily Steps", 1000, 20000, 6000)
+    sleep_duration = st.slider("Sleep Duration (h)", 3.0, 10.0, float(get_val('sleep', 7.0, 5.2)), 0.1)
+    sleep_quality = st.slider("Sleep Quality (1–10)", 1, 10, get_val('qual', 7, 4))
+    stress_level = st.slider("Stress Level (1–10)", 1, 10, get_val('stress', 5, 8)) 
+    physical_activity = st.slider("Phys. Activity (min/day)", 0, 150, get_val('act', 45, 20))
+    daily_steps = st.slider("Daily Steps", 1000, 20000, get_val('steps', 6000, 3500))
 
 with st.sidebar.expander("❤️ Vitals", expanded=False):
-    heart_rate = st.slider("Heart Rate (bpm)", 50, 120, 72)
-    bp_systolic = st.number_input("Systolic BP", 90, 180, 120)
-    bp_diastolic = st.number_input("Diastolic BP", 60, 120, 80)
+    heart_rate = st.slider("Heart Rate (bpm)", 50, 120, get_val('hr', 72, 85))
+    bp_systolic = st.number_input("Systolic BP", 90, 180, get_val('bps', 120, 135))
+    bp_diastolic = st.number_input("Diastolic BP", 60, 120, get_val('bpd', 80, 90))
 
-# Data Processing
 gender_map = {"Male": 1, "Female": 0}
 bmi_map = {"Normal": 0, "Normal Weight": 0, "Overweight": 1, "Obese": 2}
 hypertension = int(bp_systolic >= 140 or bp_diastolic >= 90)
@@ -179,7 +242,7 @@ input_df = pd.DataFrame([input_data])
 if not is_demo_mode:
     input_df = input_df[feature_names]
 
-
+# Main Interface
 
 col_title_L, col_title_R = st.columns([1, 5])
 with col_title_R:
@@ -195,6 +258,9 @@ except:
     prob_val = 0.5 
 
 st.markdown("---")
+
+
+#VISUALIZATIONS (Graphs)
 
 col_viz_left, col_viz_right = st.columns(2)
 
@@ -236,8 +302,6 @@ with col_viz_left:
     else:
         st.success("✅ **Stable:** Patterns indicate healthy circadian rhythm.")
 
-
-# --- RIGHT: RADAR CHART ---
 with col_viz_right:
     st.markdown("### Population Benchmark")
     
@@ -291,6 +355,33 @@ with col_viz_right:
     
     st.plotly_chart(fig_radar, use_container_width=True)
 
+
+# DR. SLEEP AI CONSULTANT 
+
+st.markdown("---")
+col_ai_icon, col_ai_content = st.columns([1, 6])
+with col_ai_icon:
+    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712038.png", width=80) 
+
+with col_ai_content:
+    st.markdown("### Dr. Sleep AI Consultant")
+
+    if prob_val > 0.5:
+        ai_advice = f"<strong>CRITICAL INSIGHT:</strong> I've detected a strong correlation between your elevated Stress ({stress_level}/10) and reduced Sleep Duration ({sleep_duration}h). This pattern triggers cortisol release, blocking Deep Sleep phases. <br><br><strong>ACTION PLAN:</strong> Prioritize a 'wind-down' routine 60 minutes before bed and target at least 6.5h of sleep to lower immediate cardiovascular risk."
+    else:
+        ai_advice = f"<strong>STATUS REPORT:</strong> Your circadian rhythm markers are stable. Your physical activity ({physical_activity} min) acts as a strong buffer against daily stress. <br><br><strong>OPTIMIZATION:</strong> To reach peak cognitive performance, try maintaining this consistency even on weekends to avoid 'Social Jetlag'."
+
+    st.markdown(f"""
+    <div class="ai-box">
+        <div class="ai-title">GENERATIVE ANALYSIS</div>
+        <div class="ai-text">{ai_advice}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+
+# SHAP Explainability
+
 st.markdown("---")
 st.markdown("### Model Explainability")
 
@@ -304,7 +395,6 @@ with st.expander("Technical Deep Dive (SHAP)", expanded=False):
         shap_values_raw = explainer.shap_values(input_df)
         expected_value_raw = explainer.expected_value
         
-
         if isinstance(shap_values_raw, list):
             shap_values_target = shap_values_raw[1][0]
             base_value_target = expected_value_raw[1] if hasattr(expected_value_raw, '__iter__') else expected_value_raw
@@ -362,8 +452,8 @@ with st.container():
         new_activity = st.slider("Activity (min)", 0, 150, int(physical_activity), 5, key="sim_activity")
         
         st.markdown("---")
-        
-        if st.button("✨ AI Auto-Optimize", type="primary"):
+    
+        if st.button("AI Auto-Optimize", type="primary"):
             st.toast("Optimizing circadian markers...", icon="🔮")
             opt_df = input_df.copy()
             opt_df['Sleep Duration'] = 8.0
@@ -422,27 +512,31 @@ with st.container():
         st.plotly_chart(fig_sim, use_container_width=True)
 
 
+# ==========================================
+# 8. ADVANCED VISUAL REPORT
+# ==========================================
 st.markdown("---")
 col_down, col_info = st.columns([3, 1])
 
 with col_down:
+    # 1. Configuração de Cores e Dados
     risk_percentage = prob_val * 100
     if prob_val > 0.5:
         risk_color = "#ff0055" # Pink
         risk_bg = "#fff0f5" # Light Pink
         risk_title = "ATTENTION REQUIRED"
         risk_icon = "⚠️"
-        recommendation = "High risk patterns detected. Immediate consultation with a sleep specialist is recommended to evaluate potential sleep disorders."
+        recommendation = "High risk patterns detected. Immediate consultation with a sleep specialist is recommended."
     else:
         risk_color = "#00c4cc" # Cyan darker for white paper
         risk_bg = "#f0fdff" # Light Cyan
         risk_title = "OPTIMAL CONDITION"
         risk_icon = "🛡️"
-        recommendation = "Your circadian rhythm appears stable. Maintain current healthy lifestyle habits including regular sleep schedule and activity."
+        recommendation = "Your circadian rhythm appears stable. Maintain current healthy lifestyle habits."
 
+    # 2. Processamento do SHAP para o Relatório
     try:
         if shap_exp_obj is None:
-           
             shap_values_rep = explainer.shap_values(input_df)
             if isinstance(shap_values_rep, list):
                 vals = shap_values_rep[1][0]
@@ -460,7 +554,6 @@ with col_down:
                 "Impact": shap_exp_obj.values,
                 "Value": shap_exp_obj.data
             })
-
 
         feat_imp['Abs'] = feat_imp['Impact'].abs()
         max_impact = feat_imp['Abs'].max() if feat_imp['Abs'].max() > 0 else 1
@@ -489,6 +582,7 @@ with col_down:
     except Exception as e:
         factors_html = f"<div style='color:#999'>Analysis data pending ({str(e)})</div>"
 
+    # 3. HTML VISUAL REDESIGN (GRID SYSTEM & CARDS)
     html_report = f"""
     <!DOCTYPE html>
     <html>
@@ -510,7 +604,7 @@ with col_down:
             /* Header */
             .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 2px solid #f3f4f6; padding-bottom: 20px; }}
             .logo {{ font-size: 24px; font-weight: 800; color: #111; }}
-            .logo span {{ color: {COLOR_ACCENT_CYAN}; }} #00c4cc used for print clarity
+            .logo span {{ color: {COLOR_ACCENT_CYAN}; }} 
             
             /* Badges */
             .badge {{ display: inline-block; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 14px; }}
@@ -641,7 +735,7 @@ with col_down:
 st.markdown(
     """
     <div style='text-align: center; color: #666; font-size: 0.8em; margin-top: 30px; opacity: 0.7;'>
-        SleepRiskAI v1.2 Final • Hackathon Edition
+        SleepRiskAI v1.5 Final • Hackathon Edition
     </div>
     """, unsafe_allow_html=True
 )
