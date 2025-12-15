@@ -20,7 +20,7 @@ COLOR_GRID = "#333333"
 
 st.set_page_config(
     page_title="SleepRiskAI | Circadian Monitor",
-    page_icon="🌌",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
