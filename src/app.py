@@ -240,7 +240,7 @@ if not is_demo_mode:
 col_title_L, col_title_R = st.columns([1, 5])
 with col_title_R:
     st.markdown(f"# SleepRisk<span>AI</span>", unsafe_allow_html=True)
-    st.markdown("##### 🌌 Advanced Sleep Disorder Risk Simulator")
+    st.markdown("##### Advanced Sleep Disorder Risk Simulator")
 
 try:
     if is_demo_mode:
@@ -444,7 +444,7 @@ if shap_exp_obj is not None:
             direction = "Increased Risk 📈"
             color = COLOR_ACCENT_PINK
         else: 
-            direction = "Decreased Risk 🛡️"
+            direction = "Decreased Risk 📉"
             color = COLOR_ACCENT_CYAN
             
         val_str = f"{val:.1f}"
@@ -748,7 +748,7 @@ with col_down:
     """
 
     st.download_button(
-        label="📄 Download Visual Report (HTML)",
+        label="Download Visual Report (HTML)",
         data=html_report,
         file_name=f"SleepRisk_Visual_Report.html",
         mime="text/html"
