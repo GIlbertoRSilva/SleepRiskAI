@@ -534,9 +534,6 @@ with st.container():
         st.plotly_chart(fig_sim, use_container_width=True)
 
 
-# ==========================================
-# 9. ADVANCED VISUAL REPORT
-# ==========================================
 st.markdown("---")
 col_down, col_info = st.columns([3, 1])
 
@@ -724,7 +721,7 @@ with col_down:
                 </div>
 
                 <div class="card" style="background: #fafafa; border-color: transparent;">
-                    <div class="card-title">📋 Clinical Summary</div>
+                    <div class="card-title">Clinical Summary</div>
                     <p style="font-size: 14px; line-height: 1.6; color: #444;">
                         Based on the analysis of {len(feature_names)} clinical markers, the algorithm detected a 
                         <strong>{risk_title}</strong>.
